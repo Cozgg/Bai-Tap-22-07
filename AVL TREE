@@ -1,0 +1,162 @@
+#include <iostream>
+using namespace std;
+
+struct Node {
+	int info;
+	Node *left;
+	Node *right;
+	int height;
+};
+
+void treeEmpty(Node *& root) {
+	root = NULL;
+}
+
+Node* createNode(int x) {
+	Node*p = new Node;
+	p->info = x;
+	p->left = NULL;
+	p->right = NULL;
+	p->height = 1;
+	return p;
+}
+
+
+int max(int a, int b) {
+	return a > b ? a : b;
+}
+
+int getHeight(Node * root) {
+	if (root == NULL)
+		return 0;
+	return root->height;
+}
+
+void update(Node *&root) {
+	root->height = 1 + max(getHeight(root->left), getHeight(root->right));
+}
+
+void rightRotate(Node *& root) {
+	Node *x = root->left;
+	root->left = x->right;
+	x->right = root;
+
+
+	update(root);
+	update(x);
+	root = x;
+}
+
+void leftRotate(Node*& root) {
+	Node *x = root->right;
+	root->right = x->right;
+	x -> left = root;
+
+	update(root);
+	update(x);
+	root = x;
+}
+
+void insertNode(Node*& root, int x) {
+	if (root == NULL) {
+		root = createNode(x);
+	}
+	else if (root->info < x)
+		insertNode(root->right, x);
+	else if (root->info > x)
+		insertNode(root->left, x);
+	else return;
+
+	update(root);
+	
+	int val = getHeight(root->left) - getHeight(root->right);
+	if (val > 1 && root->left->info > x) {
+		//trai trai
+		rightRotate(root);
+	}
+	else if (val < -1 && root->right->info < x) {
+		//phai phai
+		leftRotate(root);
+	}
+	else if (val > 1 && root->left->info < x) {
+		//trai phai
+		leftRotate(root->left);
+		rightRotate(root);
+	}
+	else if (val < -1 && root->right->info > x) {
+		rightRotate(root->right);
+		leftRotate(root);
+	}
+}
+
+void LNR(Node *root) {
+	if (root != NULL) {
+		LNR(root->left);
+		cout << root->info << "("<<root->height<<") ";
+		LNR(root->right);
+	}
+}
+
+//void NodeK(Node *root, int x) {
+//	if (root != NULL) {
+//		LNR(root->left);
+//		if (root->height == x) {
+//			cout << root->info << "(" << root->height << ") ";
+//		}
+//		LNR(root->right);
+//	}
+//}
+
+void searchStandFor(Node*&p, Node*&q) {
+	if (q->left == NULL) {
+		p->info = q->info;
+		p = q;
+		q = q->right;
+	}
+	else searchStandFor(p, q->left);
+	if (q != NULL)
+		q->height = 1 + max(getHeight(q->left), getHeight(q->right));
+}
+
+void delNode(Node*root, int x) {
+	if (root == NULL) {
+		return;
+	}
+	else if (x > root->info) {
+		delNode(root->right, x);
+	}
+	else if (x < root->info) {
+		delNode(root->left, x);
+	}
+	else if (x == root->info) {
+		Node*tmp = root;
+		if (root->left == NULL)
+			root = root->right;
+		else if (root->right == NULL)
+			root = root->left;
+		else 
+			searchStandFor(tmp, root->right);
+		delete tmp;
+		tmp = NULL;
+	}
+}
+
+int main() {
+
+	Node* root;
+	treeEmpty(root);
+
+	insertNode(root, 40);
+	insertNode(root, 20);
+	insertNode(root, 50);
+	insertNode(root, 25);
+	insertNode(root, 15);
+	insertNode(root, 7);
+	LNR(root);
+
+	cout << endl;
+	delNode(root, 7);
+	LNR(root);
+	cout << endl;
+	return 1;
+}
